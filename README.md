@@ -44,3 +44,11 @@ The family lives in `src/data/family.yaml` and the animals in `src/data/animals.
 ## Design
 
 The look comes from the holding itself: salt-mist ground, sand surfaces, granite text, a deep-sea blue, kelp green from the vegetable beds, and sea thrift pink as the accent. Colors and spacing are CSS custom properties registered with `@property` in `src/styles/global.css`, with a separate night palette for dark mode. Responsive styles follow the Shared First approach: shared rules sit outside media queries and everything else lives in bounded ranges (`width < 40em`, `40em <= width < 64em`, `width >= 64em`).
+
+## Deploying to Cloudflare
+
+The site is fully static and deploys as Cloudflare Workers static assets, configured in `wrangler.jsonc`. No Worker code runs; Cloudflare serves the files in `dist/` and uses `404.html` for missing pages. Cache and security headers live in `public/_headers`.
+
+To deploy from your machine, run `npm run deploy` (the first run asks you to log in to Cloudflare). To deploy on every push instead, connect the repository in the Cloudflare dashboard under Workers & Pages, with `npm run build` as the build command and `npx wrangler deploy` as the deploy command.
+
+Once the custom domain is attached in the dashboard (Settings, then Domains & Routes), set `site` in `astro.config.mjs` to that domain.

@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "the-nuthlings",
+  "compatibility_date": "2026-10-01",
+  // A fully static site: Cloudflare serves the built files directly, no Worker code runs.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}
