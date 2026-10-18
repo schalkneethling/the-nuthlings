@@ -1,0 +1,187 @@
+---
+import { sections } from "../lib/sections";
+import BrandMark from "./BrandMark.astro";
+
+const links = [
+  ...sections.map((section) => ({ href: `/${section.slug}/`, label: section.label })),
+  { href: "/family/", label: "Family" },
+];
+
+const currentPath = Astro.url.pathname;
+const isCurrent = (href: string) => currentPath === href || currentPath.startsWith(href);
+---
+
+<header class="site-header">
+  <div class="wrapper site-header__inner">
+    <a class="brand" href="/">
+      <BrandMark />
+      <span class="brand__name">The Nuthlings</span>
+    </a>
+
+    <button class="menu-button" type="button" popovertarget="site-nav">
+      Places
+    </button>
+
+    <nav id="site-nav" class="site-nav" popover aria-label="Places on the holding">
+      <ul class="site-nav__list" role="list">
+        {
+          links.map((link) => (
+            <li>
+              <a href={link.href} aria-current={isCurrent(link.href) ? "page" : undefined}>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <button class="site-nav__close" type="button" popovertarget="site-nav" popovertargetaction="hide">
+        Close
+      </button>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--color-rule);
+    background-color: var(--color-ground);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.875rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .brand__name {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    line-height: 1;
+  }
+
+  .site-nav__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+  }
+
+  .site-nav__list a {
+    display: block;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .site-nav__list a:hover {
+    color: var(--color-sea);
+  }
+
+  .site-nav__list a[aria-current="page"] {
+    color: var(--color-sea);
+    text-decoration: underline;
+    text-decoration-color: var(--color-thrift);
+    text-decoration-thickness: 2px;
+  }
+
+  .menu-button,
+  .site-nav__close {
+    font: inherit;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-soft);
+    background-color: transparent;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+
+  /* small + medium: the places open as a sheet from the top of the screen */
+  @media (width < 64em) {
+    .site-nav {
+      inset: 0 0 auto;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+      padding-bottom: 1.5rem;
+      padding-left: max(var(--space-gutter), env(safe-area-inset-left, 0px));
+      padding-right: max(var(--space-gutter), env(safe-area-inset-right, 0px));
+      border: 0;
+      border-bottom: 1px solid var(--color-rule);
+      background-color: var(--color-ground);
+      color: var(--color-ink);
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .site-nav:popover-open {
+      display: flex;
+    }
+
+    .site-nav::backdrop {
+      background-color: rgb(0 0 0 / 0.35);
+    }
+
+    .site-nav__list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.25rem 1rem;
+    }
+
+    .site-nav__list a {
+      padding-block: 0.625rem;
+      border-bottom: 1px solid var(--color-rule);
+      font-family: var(--font-display);
+      font-size: var(--step-1);
+    }
+
+    .site-nav__close {
+      align-self: flex-start;
+    }
+  }
+
+  /* large: the places sit inline and the popover behavior is switched off */
+  @media (width >= 64em) {
+    .menu-button,
+    .site-nav__close {
+      display: none;
+    }
+
+    .site-nav {
+      display: block;
+      position: static;
+      inset: auto;
+      width: auto;
+      height: auto;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+      border: 0;
+      background: none;
+      color: inherit;
+    }
+
+    .site-nav__list {
+      flex-wrap: wrap;
+      gap: 0.25rem 1.25rem;
+      font-size: var(--step-0);
+    }
+
+    .site-nav__list a {
+      padding-block: 0.25rem;
+    }
+  }
+</style>

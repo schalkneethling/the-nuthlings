@@ -1,0 +1,236 @@
+---
+/*
+ * The holding, drawn as a strip of landscape: a furrowed field and cottage on
+ * the left, the music shed beside it, sand and rocks running down to the sea
+ * on the right. The cottage window glows like a screen, for the workshop.
+ *
+ * The scene is decorative, so it is hidden from assistive technology. Wave
+ * lines and crop rows are generated here instead of being hand-written.
+ */
+
+const width = 1200;
+const waveLength = 48;
+
+/** A gentle repeating wave across the whole width, plus one wavelength so it can drift. */
+function wavePath(y: number, amplitude: number): string {
+  const segments = Math.ceil((width + waveLength) / waveLength) + 1;
+  let path = `M${-waveLength} ${y}`;
+
+  for (let index = 0; index < segments; index += 1) {
+    path += ` q${waveLength / 4} ${-amplitude} ${waveLength / 2} 0 t${waveLength / 2} 0`;
+  }
+
+  return path;
+}
+
+const waves = [
+  { y: 196, amplitude: 3, className: "wave wave--far" },
+  { y: 222, amplitude: 4, className: "wave wave--mid" },
+  { y: 252, amplitude: 5, className: "wave wave--near" },
+];
+
+/** Crop rows fanning toward the horizon, clipped to the field shape. */
+const cropRows = Array.from({ length: 14 }, (_, index) => {
+  const bottomX = -80 + index * 48;
+  const topX = 90 + index * 26;
+  return `M${bottomX} 360 L${topX} 250`;
+});
+
+const birds = [
+  { x: 760, y: 128, scale: 1 },
+  { x: 792, y: 114, scale: 0.8 },
+  { x: 822, y: 136, scale: 0.65 },
+];
+---
+
+<div class="holding-scene" aria-hidden="true">
+  <svg viewBox="0 96 1200 264" preserveAspectRatio="xMidYMax slice" focusable="false">
+    <defs>
+      <clipPath id="field-clip">
+        <path d="M0 272 C 140 250, 300 246, 420 256 L 470 360 L 0 360 Z"></path>
+      </clipPath>
+      <clipPath id="sea-clip">
+        <rect x="0" y="170" width="1200" height="140"></rect>
+      </clipPath>
+    </defs>
+
+    <circle class="sun" cx="930" cy="172" r="46"></circle>
+
+    {
+      birds.map((bird) => (
+        <path
+          class="bird"
+          d="M-10 0 q5 -6 10 0 q5 -6 10 0"
+          transform={`translate(${bird.x} ${bird.y}) scale(${bird.scale})`}
+        />
+      ))
+    }
+
+    <rect class="sea" x="0" y="170" width="1200" height="140"></rect>
+    <g clip-path="url(#sea-clip)">
+      {waves.map((wave) => <path class={wave.className} d={wavePath(wave.y, wave.amplitude)} />)}
+    </g>
+
+    <path class="sand" d="M520 360 C 640 290, 820 268, 1200 262 L 1200 360 Z"></path>
+
+    <g class="rocks">
+      <path class="rock" d="M960 284 L 990 248 L 1032 242 L 1062 270 L 1056 292 Z"></path>
+      <path class="rock rock--dark" d="M1040 296 L 1074 254 L 1118 250 L 1150 280 L 1140 304 Z"></path>
+      <path class="rock" d="M1120 306 L 1150 270 L 1200 262 L 1200 312 Z"></path>
+      <path class="rock rock--dark" d="M900 300 L 918 282 L 944 284 L 950 302 Z"></path>
+    </g>
+
+    <path class="land" d="M0 222 C 180 196, 420 196, 600 238 C 680 258, 720 300, 780 360 L 0 360 Z"></path>
+
+    <path class="field" d="M0 272 C 140 250, 300 246, 420 256 L 470 360 L 0 360 Z"></path>
+    <g class="crop-rows" clip-path="url(#field-clip)">
+      {cropRows.map((row) => <path d={row} />)}
+    </g>
+
+    <g class="fence">
+      {Array.from({ length: 8 }, (_, index) => <rect x={36 + index * 44} y="236" width="4" height="22" />)}
+      <path d="M36 242 L 352 242 M36 252 L 352 252"></path>
+    </g>
+
+    <g class="shed">
+      <rect class="wall" x="476" y="196" width="54" height="40"></rect>
+      <path class="roof roof--shed" d="M470 198 L 503 178 L 536 198 Z"></path>
+      <rect class="door" x="497" y="212" width="14" height="24"></rect>
+    </g>
+
+    <g class="cottage">
+      <rect class="wall" x="560" y="176" width="124" height="66"></rect>
+      <path class="roof" d="M548 180 L 622 132 L 696 180 Z"></path>
+      <rect class="chimney" x="654" y="138" width="14" height="24"></rect>
+      <rect class="window" x="578" y="196" width="30" height="22"></rect>
+      <path class="window-frame" d="M593 196 V 218 M578 207 H 608"></path>
+      <rect class="door" x="636" y="206" width="22" height="36"></rect>
+    </g>
+  </svg>
+</div>
+
+<style>
+  .holding-scene {
+    width: 100%;
+    overflow: hidden;
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  .holding-scene svg {
+    width: 100%;
+  }
+
+  .sun {
+    fill: var(--color-glow);
+  }
+
+  .bird {
+    fill: none;
+    stroke: var(--color-ink-soft);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .sea {
+    fill: var(--color-scene-sea);
+  }
+
+  .wave {
+    fill: none;
+    stroke: var(--color-scene-foam);
+    stroke-width: 2;
+    stroke-linecap: round;
+    animation: drift 9s linear infinite;
+  }
+
+  .wave--mid {
+    animation-duration: 7s;
+  }
+
+  .wave--near {
+    animation-duration: 5.5s;
+  }
+
+  .sand {
+    fill: var(--color-scene-sand);
+  }
+
+  .rock {
+    fill: var(--color-rock);
+  }
+
+  .rock--dark {
+    fill: var(--color-ink-soft);
+  }
+
+  .land {
+    fill: var(--color-kelp-light);
+  }
+
+  .field {
+    fill: var(--color-kelp);
+  }
+
+  .crop-rows path {
+    fill: none;
+    stroke: var(--color-kelp-light);
+    stroke-width: 3;
+  }
+
+  .fence rect {
+    fill: var(--color-ink-soft);
+  }
+
+  .fence path {
+    fill: none;
+    stroke: var(--color-ink-soft);
+    stroke-width: 2;
+  }
+
+  .wall {
+    fill: var(--color-surface);
+    stroke: var(--color-ink);
+    stroke-width: 2;
+  }
+
+  .roof {
+    fill: var(--color-sea);
+  }
+
+  .roof--shed {
+    fill: var(--color-thrift);
+  }
+
+  .chimney,
+  .door {
+    fill: var(--color-ink);
+  }
+
+  .window {
+    fill: var(--color-glow);
+    stroke: var(--color-ink);
+    stroke-width: 2;
+  }
+
+  .window-frame {
+    fill: none;
+    stroke: var(--color-ink);
+    stroke-width: 2;
+  }
+
+  @keyframes drift {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(48px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wave {
+      animation: none;
+    }
+  }
+</style>

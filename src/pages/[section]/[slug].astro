@@ -1,0 +1,216 @@
+---
+import { Image } from "astro:assets";
+import { render } from "astro:content";
+import Byline from "../../components/Byline.astro";
+import SampleBadge from "../../components/SampleBadge.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { entrySlug, getFamilyNames, getStories, type Story } from "../../lib/content";
+import { readingMinutes } from "../../lib/format";
+import { getSection } from "../../lib/sections";
+
+export async function getStaticPaths() {
+  const stories = await getStories();
+  return stories.map((story) => ({
+    params: { section: story.data.section, slug: entrySlug(story) },
+    props: { story },
+  }));
+}
+
+interface Props {
+  story: Story;
+}
+
+const { story } = Astro.props;
+const { Content } = await render(story);
+const section = getSection(story.data.section);
+const names = await getFamilyNames();
+const authorId = story.data.author.id;
+const minutes = readingMinutes(story.body ?? "");
+---
+
+<BaseLayout title={story.data.title} description={story.data.description}>
+  <article class="story wrapper">
+    <header class="story__header">
+      <p class="marker"><a href={`/${section.slug}/`}>{section.place}</a></p>
+      <h1 class="story__title">{story.data.title}</h1>
+      <p class="story__description">{story.data.description}</p>
+      <Byline authorId={authorId} authorName={names.get(authorId) ?? authorId} date={story.data.date} extra={`${minutes} min read`} />
+      {story.data.sample && <SampleBadge />}
+    </header>
+
+    {
+      story.data.cover && (
+        <Image class="story__cover" src={story.data.cover} alt={story.data.coverAlt ?? ""} widths={[640, 1280]} sizes="(width >= 64em) 64rem, 100vw" />
+      )
+    }
+
+    <div class="story__layout">
+      <div class="prose">
+        <Content />
+      </div>
+
+      {
+        story.data.materials.length > 0 && (
+          <aside class="materials" aria-labelledby="materials-title">
+            <h2 id="materials-title" class="marker">
+              What went into it
+            </h2>
+            <ul role="list">
+              {story.data.materials.map((material) => (
+                <li>{material}</li>
+              ))}
+            </ul>
+          </aside>
+        )
+      }
+    </div>
+
+    {
+      story.data.tags.length > 0 && (
+        <ul class="tags" role="list" aria-label="Tags">
+          {story.data.tags.map((tag) => (
+            <li>{tag}</li>
+          ))}
+        </ul>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .story {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .story__header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.875rem;
+    max-width: 48rem;
+  }
+
+  .story__header .marker a {
+    color: inherit;
+  }
+
+  .story__description {
+    font-size: var(--step-1);
+    line-height: 1.45;
+    color: var(--color-ink-soft);
+  }
+
+  .story__cover {
+    width: 100%;
+    border-radius: var(--radius-soft);
+  }
+
+  .story__layout {
+    display: grid;
+  }
+
+  .story__layout > * {
+    min-width: 0;
+  }
+
+  .materials {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border-radius: var(--radius-soft);
+    background-color: var(--color-surface);
+  }
+
+  .materials ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .materials li {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--color-rule);
+  }
+
+  .materials li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .tags {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tags li {
+    padding: 0.125rem 0.625rem;
+    border: 1px solid var(--color-rule);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--color-ink-soft);
+  }
+
+  @media (width < 40em) {
+    .story {
+      padding-block: 2.5rem 0;
+    }
+
+    .story__title {
+      font-size: var(--step-4);
+    }
+  }
+
+  @media (40em <= width < 64em) {
+    .story {
+      padding-block: 3.5rem 0;
+    }
+
+    .story__title {
+      font-size: var(--step-5);
+    }
+  }
+
+  /* small + medium: materials sit above the writing so makers see them first */
+  @media (width < 64em) {
+    .story__layout {
+      gap: 2rem;
+    }
+
+    .materials {
+      order: -1;
+    }
+  }
+
+  @media (width >= 64em) {
+    .story {
+      padding-block: 4.5rem 0;
+    }
+
+    .story__title {
+      font-size: var(--step-5);
+    }
+
+    .story__layout {
+      grid-template-columns: minmax(0, var(--measure)) minmax(14rem, 18rem);
+      justify-content: space-between;
+      align-items: start;
+      gap: 4rem;
+    }
+
+    .materials {
+      position: sticky;
+      top: 2rem;
+    }
+  }
+</style>

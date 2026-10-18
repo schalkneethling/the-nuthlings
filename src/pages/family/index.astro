@@ -1,0 +1,70 @@
+---
+import { getCollection } from "astro:content";
+import PageIntro from "../../components/PageIntro.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const family = await getCollection("family");
+---
+
+<BaseLayout title="The family" description="The people behind the gardening, cooking, crafts, art, and music.">
+  <PageIntro eyebrow="Family" title="The family" description="The people behind everything you find on the holding." />
+
+  <ul class="wrapper people" role="list">
+    {
+      family.map((member) => (
+        <li class="person">
+          <p class="marker">{member.data.role}</p>
+          <h2 class="person__name">
+            <a href={`/family/${member.id}/`}>{member.data.name}</a>
+          </h2>
+          <p class="person__bio">{member.data.bio}</p>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>
+
+<style>
+  .people {
+    margin-block: 0;
+    list-style: none;
+    display: grid;
+  }
+
+  .person {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--color-ink);
+  }
+
+  .person__name {
+    font-size: var(--step-3);
+  }
+
+  .person__bio {
+    color: var(--color-ink-soft);
+  }
+
+  @media (width < 40em) {
+    .people {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  @media (40em <= width < 64em) {
+    .people {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2.5rem 2rem;
+    }
+  }
+
+  @media (width >= 64em) {
+    .people {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 3rem 2.5rem;
+    }
+  }
+</style>

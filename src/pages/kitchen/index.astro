@@ -1,0 +1,32 @@
+---
+import EntryCard from "../../components/EntryCard.astro";
+import EntryGrid from "../../components/EntryGrid.astro";
+import PageIntro from "../../components/PageIntro.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getFamilyNames, getRecipes, toCardData } from "../../lib/content";
+import { getSection } from "../../lib/sections";
+
+const section = getSection("kitchen");
+const [recipes, names] = await Promise.all([getRecipes(), getFamilyNames()]);
+---
+
+<BaseLayout title={section.place} description={section.description}>
+  <PageIntro eyebrow={section.label} title={section.place} description={section.description} />
+
+  <section class="wrapper" aria-labelledby="recipes-title">
+    <h2 id="recipes-title" class="visually-hidden">Recipes</h2>
+    {
+      recipes.length > 0 ? (
+        <EntryGrid>
+          {recipes.map((recipe) => (
+            <li>
+              <EntryCard {...toCardData(recipe, names)} />
+            </li>
+          ))}
+        </EntryGrid>
+      ) : (
+        <p>No recipes yet. The first one is on its way.</p>
+      )
+    }
+  </section>
+</BaseLayout>

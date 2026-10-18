@@ -1,0 +1,22 @@
+# The people who write on the site. The key (for example "schalk") is what
+# goes in the `author` field of a story or recipe.
+schalk:
+  name: Schalk
+  role: Keeper of the workshop
+  bio: Builds and looks after this website, plays a bit of guitar, and spends a lot of time talking to computers.
+mom:
+  name: Mom
+  role: Gardener, cook, and maker
+  bio: Grows most of what we eat, crochets and knits in the evenings, and writes about life with type 2 diabetes.
+eldest:
+  name: Eldest daughter
+  role: Artist and plushie maker
+  bio: Draws, paints, and knits the most wonderful plushies.
+daughter:
+  name: Daughter
+  role: Artist
+  bio: Fills sketchbooks faster than we can buy them.
+son:
+  name: Son
+  role: Guitarist
+  bio: Usually somewhere in the music shed with a guitar.

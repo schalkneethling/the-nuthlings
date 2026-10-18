@@ -1,0 +1,33 @@
+---
+/* A sun sitting on the sea above a furrowed field: the holding in one glyph. */
+---
+
+<svg class="brand-mark" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true" focusable="false">
+  <circle class="brand-mark__sun" cx="16" cy="13" r="7"></circle>
+  <rect class="brand-mark__sea" x="2" y="14" width="28" height="7" rx="1"></rect>
+  <path class="brand-mark__wave" d="M3 17.5 q2.5 -2 5 0 t5 0 t5 0 t5 0 t5 0" fill="none" stroke-width="1.5"></path>
+  <path class="brand-mark__field" d="M2 22 h28 v7 a1 1 0 0 1 -1 1 h-26 a1 1 0 0 1 -1 -1 z"></path>
+  <path class="brand-mark__rows" d="M8 30 l3 -8 M15 30 l1 -8 M22 30 l-1 -8" fill="none" stroke-width="1.5"></path>
+</svg>
+
+<style>
+  .brand-mark__sun {
+    fill: var(--color-glow);
+  }
+
+  .brand-mark__sea {
+    fill: var(--color-sea);
+  }
+
+  .brand-mark__wave {
+    stroke: var(--color-sea-light);
+  }
+
+  .brand-mark__field {
+    fill: var(--color-kelp);
+  }
+
+  .brand-mark__rows {
+    stroke: var(--color-kelp-light);
+  }
+</style>

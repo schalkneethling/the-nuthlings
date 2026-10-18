@@ -1,0 +1,62 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  description?: string;
+}
+
+const { eyebrow, title, description } = Astro.props;
+---
+
+<header class="page-intro wrapper">
+  <p class="marker">{eyebrow}</p>
+  <h1 class="page-intro__title">{title}</h1>
+  {description && <p class="page-intro__description">{description}</p>}
+  <slot />
+</header>
+
+<style>
+  .page-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .page-intro__description {
+    max-width: var(--measure);
+    font-size: var(--step-1);
+    line-height: 1.45;
+    color: var(--color-ink-soft);
+  }
+
+  @media (width < 40em) {
+    .page-intro {
+      padding-block: 2.5rem 2rem;
+    }
+
+    .page-intro__title {
+      font-size: var(--step-4);
+    }
+  }
+
+  @media (40em <= width < 64em) {
+    .page-intro {
+      padding-block: 3.5rem 2.5rem;
+    }
+
+    .page-intro__title {
+      font-size: var(--step-5);
+    }
+  }
+
+  @media (width >= 64em) {
+    .page-intro {
+      padding-block: 4.5rem 3rem;
+    }
+
+    .page-intro__title {
+      font-size: var(--step-5);
+    }
+  }
+</style>

@@ -1,0 +1,312 @@
+---
+import { getCollection } from "astro:content";
+import EntryCard from "../components/EntryCard.astro";
+import EntryGrid from "../components/EntryGrid.astro";
+import HoldingScene from "../components/HoldingScene.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { newestFirst } from "../lib/entries";
+import { formatDate } from "../lib/format";
+import { getFamilyNames, getRecipes, getStories, toCardData } from "../lib/content";
+import { sections } from "../lib/sections";
+
+const [stories, recipes, names, family, animals] = await Promise.all([
+  getStories(),
+  getRecipes(),
+  getFamilyNames(),
+  getCollection("family"),
+  getCollection("animals"),
+]);
+
+const latest = newestFirst([...stories, ...recipes]).slice(0, 6);
+
+const plots = sections.map((section) => {
+  const entries = section.slug === "kitchen" ? recipes : stories.filter((story) => story.data.section === section.slug);
+  const noun = section.slug === "kitchen" ? "recipe" : "entry";
+  const plural = section.slug === "kitchen" ? "recipes" : "entries";
+
+  return {
+    ...section,
+    count: `${entries.length} ${entries.length === 1 ? noun : plural}`,
+    latest: entries[0]?.data.date,
+  };
+});
+
+const dogs = animals.filter((animal) => animal.data.kind === "dog").length;
+const cats = animals.filter((animal) => animal.data.kind === "cat").length;
+---
+
+<BaseLayout>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrapper hero__text">
+      <p class="marker">A family smallholding by the sea</p>
+      <h1 id="hero-title" class="hero__title">The Nuthlings</h1>
+      <p class="hero__lede">
+        Vegetables in the beds, wool on the needles, paint on the table, and a guitar in the shed. This is where all of
+        us share what we grow, cook, make, and play.
+      </p>
+    </div>
+    <HoldingScene />
+  </section>
+
+  <section class="wrapper home-section" aria-labelledby="plots-title">
+    <div class="home-section__heading">
+      <h2 id="plots-title">Around the holding</h2>
+      <p class="marker">{sections.length} places</p>
+    </div>
+
+    <ul class="plots" role="list">
+      {
+        plots.map((plot) => (
+          <li class="plot">
+            <p class="marker">{plot.label}</p>
+            <h3 class="plot__name">
+              <a href={`/${plot.slug}/`}>{plot.place}</a>
+            </h3>
+            <p class="plot__description">{plot.description}</p>
+            <p class="plot__meta">
+              <span>{plot.count}</span>
+              {plot.latest && (
+                <span>
+                  Latest <time datetime={plot.latest.toISOString().slice(0, 10)}>{formatDate(plot.latest)}</time>
+                </span>
+              )}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="wrapper home-section" aria-labelledby="latest-title">
+    <div class="home-section__heading">
+      <h2 id="latest-title">Fresh from the holding</h2>
+    </div>
+
+    <EntryGrid>
+      {
+        latest.map((entry) => (
+          <li>
+            <EntryCard {...toCardData(entry, names)} />
+          </li>
+        ))
+      }
+    </EntryGrid>
+  </section>
+
+  <section class="wrapper home-section" aria-labelledby="family-title">
+    <div class="home-section__heading">
+      <h2 id="family-title">Who lives here</h2>
+    </div>
+
+    <div class="residents">
+      <ul class="residents__people" role="list">
+        {
+          family.map((member) => (
+            <li>
+              <a href={`/family/${member.id}/`}>{member.data.name}</a>
+              <span class="residents__role">{member.data.role}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="residents__animals">
+        And <a href="/animals/">{dogs} dogs and {cats} cats</a>, who would like it known that they were here first.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.875rem;
+  }
+
+  .hero__title {
+    letter-spacing: -0.01em;
+    color: var(--color-sea);
+  }
+
+  .hero__lede {
+    max-width: 36rem;
+    font-size: var(--step-1);
+    line-height: 1.45;
+    color: var(--color-ink-soft);
+  }
+
+  .home-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .home-section__heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  .home-section__heading h2 {
+    font-size: var(--step-3);
+  }
+
+  /* The places on the holding, laid out like plots on a hand-drawn site plan. */
+  .plots {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    border-top: 1px solid var(--color-rule);
+    border-left: 1px solid var(--color-rule);
+  }
+
+  .plot {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    border-right: 1px solid var(--color-rule);
+    border-bottom: 1px solid var(--color-rule);
+    transition: background-color 160ms ease;
+  }
+
+  .plot:hover {
+    background-color: var(--color-surface);
+  }
+
+  .plot:has(:focus-visible) {
+    outline: 3px solid var(--color-thrift);
+    outline-offset: -3px;
+  }
+
+  .plot__name {
+    font-size: var(--step-2);
+  }
+
+  .plot__name a {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .plot__name a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .plot__name a:focus-visible {
+    outline: none;
+  }
+
+  .plot__description {
+    color: var(--color-ink-soft);
+  }
+
+  .plot__meta {
+    margin-top: auto;
+    padding-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--color-sea);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .residents {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .residents__people {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.5rem;
+  }
+
+  .residents__people li {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .residents__people a {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+  }
+
+  .residents__role {
+    font-size: var(--step--1);
+    color: var(--color-ink-soft);
+  }
+
+  .residents__animals {
+    max-width: var(--measure);
+    font-size: var(--step-1);
+  }
+
+  @media (width < 40em) {
+    .hero__text {
+      padding-block: 2.5rem 1.5rem;
+    }
+
+    .hero__title {
+      font-size: var(--step-4);
+    }
+
+    .home-section {
+      margin-top: 3.5rem;
+    }
+
+    .plots {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (40em <= width < 64em) {
+    .hero__text {
+      padding-block: 3.5rem 2rem;
+    }
+
+    .hero__title {
+      font-size: var(--step-5);
+    }
+
+    .home-section {
+      margin-top: 4.5rem;
+    }
+
+    .plots {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (width >= 64em) {
+    .hero__text {
+      padding-block: 4.5rem 2rem;
+    }
+
+    .hero__title {
+      font-size: clamp(var(--step-5), 7vw, 5.5rem);
+    }
+
+    .home-section {
+      margin-top: 5.5rem;
+    }
+
+    .plots {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

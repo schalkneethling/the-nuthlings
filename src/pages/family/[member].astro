@@ -1,0 +1,52 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import EntryCard from "../../components/EntryCard.astro";
+import EntryGrid from "../../components/EntryGrid.astro";
+import PageIntro from "../../components/PageIntro.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { newestFirst } from "../../lib/entries";
+import { getFamilyNames, getRecipes, getStories, toCardData } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const family = await getCollection("family");
+  return family.map((member) => ({ params: { member: member.id }, props: { member } }));
+}
+
+interface Props {
+  member: CollectionEntry<"family">;
+}
+
+const { member } = Astro.props;
+const [stories, recipes, names] = await Promise.all([getStories(), getRecipes(), getFamilyNames()]);
+const entries = newestFirst([...stories, ...recipes].filter((entry) => entry.data.author.id === member.id));
+---
+
+<BaseLayout title={member.data.name} description={member.data.bio}>
+  <PageIntro eyebrow={member.data.role} title={member.data.name} description={member.data.bio} />
+
+  <section class="wrapper" aria-labelledby="by-title">
+    <h2 id="by-title" class="by-title">By {member.data.name}</h2>
+    {
+      entries.length > 0 ? (
+        <EntryGrid>
+          {entries.map((entry) => (
+            <li>
+              <EntryCard {...toCardData(entry, names)} />
+            </li>
+          ))}
+        </EntryGrid>
+      ) : (
+        <p>Nothing posted yet.</p>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .by-title {
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-rule);
+    font-size: var(--step-3);
+  }
+</style>

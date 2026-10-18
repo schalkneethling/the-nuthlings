@@ -1,0 +1,37 @@
+---
+/* Lays out entry cards: one column on small screens, two on medium, three on large. */
+---
+
+<ul class="entry-grid" role="list">
+  <slot />
+</ul>
+
+<style>
+  .entry-grid {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+  }
+
+  @media (width < 40em) {
+    .entry-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  @media (40em <= width < 64em) {
+    .entry-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2.5rem 2rem;
+    }
+  }
+
+  @media (width >= 64em) {
+    .entry-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 3rem 2.5rem;
+    }
+  }
+</style>

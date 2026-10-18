@@ -1,0 +1,257 @@
+---
+import { Image } from "astro:assets";
+import { render } from "astro:content";
+import Byline from "../../components/Byline.astro";
+import SampleBadge from "../../components/SampleBadge.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { entrySlug, getFamilyNames, getRecipes, type Recipe } from "../../lib/content";
+import { formatMinutes } from "../../lib/format";
+import { getSection } from "../../lib/sections";
+
+export async function getStaticPaths() {
+  const recipes = await getRecipes();
+  return recipes.map((recipe) => ({ params: { slug: entrySlug(recipe) }, props: { recipe } }));
+}
+
+interface Props {
+  recipe: Recipe;
+}
+
+const { recipe } = Astro.props;
+const { Content } = await render(recipe);
+const section = getSection("kitchen");
+const names = await getFamilyNames();
+const authorId = recipe.data.author.id;
+const { serves, prepMinutes, cookMinutes, carbsPerServing, ingredients } = recipe.data;
+
+const facts = [
+  { term: "Serves", value: String(serves) },
+  { term: "Prep", value: formatMinutes(prepMinutes) },
+  { term: "Cook", value: formatMinutes(cookMinutes) },
+  { term: "Total", value: formatMinutes(prepMinutes + cookMinutes) },
+  { term: "Carbs per serving", value: carbsPerServing !== undefined ? `about ${carbsPerServing} g` : "" },
+].filter((fact) => fact.value);
+---
+
+<BaseLayout title={recipe.data.title} description={recipe.data.description}>
+  <article class="recipe wrapper">
+    <header class="recipe__header">
+      <p class="marker"><a href={`/${section.slug}/`}>{section.place}</a></p>
+      <h1 class="recipe__title">{recipe.data.title}</h1>
+      <p class="recipe__description">{recipe.data.description}</p>
+      <Byline authorId={authorId} authorName={names.get(authorId) ?? authorId} date={recipe.data.date} />
+      {recipe.data.sample && <SampleBadge />}
+    </header>
+
+    <dl class="facts">
+      {
+        facts.map((fact) => (
+          <div class="facts__item">
+            <dt>{fact.term}</dt>
+            <dd>{fact.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    {
+      recipe.data.cover && (
+        <Image class="recipe__cover" src={recipe.data.cover} alt={recipe.data.coverAlt ?? ""} widths={[640, 1280]} sizes="(width >= 64em) 64rem, 100vw" />
+      )
+    }
+
+    <div class="recipe__layout">
+      <section class="ingredients" aria-labelledby="ingredients-title">
+        <h2 id="ingredients-title" class="recipe__subtitle">Ingredients</h2>
+        <p class="ingredients__hint">Tick things off as you go.</p>
+        <ul role="list">
+          {
+            ingredients.map((ingredient, index) => (
+              <li>
+                <input type="checkbox" id={`ingredient-${index}`} />
+                <label for={`ingredient-${index}`}>{ingredient}</label>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section class="method" aria-labelledby="method-title">
+        <h2 id="method-title" class="recipe__subtitle">Method</h2>
+        <div class="prose">
+          <Content />
+        </div>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .recipe {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .recipe__header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.875rem;
+    max-width: 48rem;
+  }
+
+  .recipe__header .marker a {
+    color: inherit;
+  }
+
+  .recipe__description {
+    font-size: var(--step-1);
+    line-height: 1.45;
+    color: var(--color-ink-soft);
+  }
+
+  .recipe__cover {
+    width: 100%;
+    border-radius: var(--radius-soft);
+  }
+
+  /* The recipe facts read like the label on a seed packet. */
+  .facts {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    border-block: 1px solid var(--color-ink);
+  }
+
+  .facts__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.875rem 1.5rem 0.875rem 0;
+  }
+
+  .facts dt {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+  }
+
+  .facts dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .recipe__layout {
+    display: grid;
+  }
+
+  .recipe__layout > * {
+    min-width: 0;
+  }
+
+  .recipe__subtitle {
+    font-size: var(--step-2);
+    margin-bottom: 0.75rem;
+  }
+
+  .ingredients {
+    padding: 1.5rem;
+    border-radius: var(--radius-soft);
+    background-color: var(--color-surface);
+  }
+
+  .ingredients__hint {
+    margin-bottom: 1rem;
+    font-size: var(--step--1);
+    color: var(--color-ink-soft);
+  }
+
+  .ingredients ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ingredients li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding-block: 0.5rem;
+    border-bottom: 1px dashed var(--color-rule);
+  }
+
+  .ingredients li:last-child {
+    border-bottom: 0;
+  }
+
+  .ingredients input {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0.2rem 0 0;
+    accent-color: var(--color-kelp);
+  }
+
+  .ingredients label {
+    cursor: pointer;
+  }
+
+  .ingredients input:checked + label {
+    color: var(--color-ink-soft);
+    text-decoration: line-through;
+  }
+
+  @media (width < 40em) {
+    .recipe {
+      padding-block: 2.5rem 0;
+    }
+
+    .recipe__title {
+      font-size: var(--step-4);
+    }
+  }
+
+  @media (40em <= width < 64em) {
+    .recipe {
+      padding-block: 3.5rem 0;
+    }
+
+    .recipe__title {
+      font-size: var(--step-5);
+    }
+  }
+
+  @media (width < 64em) {
+    .recipe__layout {
+      gap: 2.5rem;
+    }
+  }
+
+  @media (width >= 64em) {
+    .recipe {
+      padding-block: 4.5rem 0;
+    }
+
+    .recipe__title {
+      font-size: var(--step-5);
+    }
+
+    .recipe__layout {
+      grid-template-columns: minmax(16rem, 22rem) minmax(0, var(--measure));
+      align-items: start;
+      gap: 4rem;
+    }
+
+    .ingredients {
+      position: sticky;
+      top: 2rem;
+    }
+  }
+</style>

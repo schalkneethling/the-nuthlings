@@ -1,0 +1,152 @@
+---
+import { getCollection } from "astro:content";
+import AnimalCard from "../../components/AnimalCard.astro";
+import EntryCard from "../../components/EntryCard.astro";
+import EntryGrid from "../../components/EntryGrid.astro";
+import PageIntro from "../../components/PageIntro.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getFamilyNames, getRecipes, getStories, toCardData } from "../../lib/content";
+import { storySections, type Section } from "../../lib/sections";
+
+export function getStaticPaths() {
+  return storySections.map((section) => ({ params: { section: section.slug }, props: { section } }));
+}
+
+interface Props {
+  section: Section;
+}
+
+const { section } = Astro.props;
+const [stories, names] = await Promise.all([getStories(), getFamilyNames()]);
+const entries = stories.filter((story) => story.data.section === section.slug);
+
+const animals = section.slug === "animals" ? await getCollection("animals") : [];
+const carbAwareRecipes =
+  section.slug === "type-2"
+    ? (await getRecipes()).filter((recipe) => recipe.data.carbsPerServing !== undefined).slice(0, 3)
+    : [];
+---
+
+<BaseLayout title={section.place} description={section.description}>
+  <PageIntro eyebrow={section.label} title={section.place} description={section.description}>
+    {
+      section.slug === "type-2" && (
+        <p class="notice">
+          Everything here is personal experience, not medical advice. Please talk to your own doctor or dietitian about
+          managing diabetes.
+        </p>
+      )
+    }
+  </PageIntro>
+
+  {
+    animals.length > 0 && (
+      <section class="wrapper section-block" aria-labelledby="animals-title">
+        <h2 id="animals-title" class="section-block__title">
+          The residents
+        </h2>
+        <ul class="animals" role="list">
+          {animals.map((animal) => (
+            <li>
+              <AnimalCard animal={animal} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <section class="wrapper section-block" aria-labelledby="entries-title">
+    <h2 id="entries-title" class={animals.length > 0 || carbAwareRecipes.length > 0 ? "section-block__title" : "visually-hidden"}>
+      {section.slug === "animals" ? "Stories from the yard" : "Entries"}
+    </h2>
+    {
+      entries.length > 0 ? (
+        <EntryGrid>
+          {entries.map((entry) => (
+            <li>
+              <EntryCard {...toCardData(entry, names)} />
+            </li>
+          ))}
+        </EntryGrid>
+      ) : (
+        <p class="empty">Nothing here yet. The first entry is on its way.</p>
+      )
+    }
+  </section>
+
+  {
+    carbAwareRecipes.length > 0 && (
+      <section class="wrapper section-block" aria-labelledby="recipes-title">
+        <h2 id="recipes-title" class="section-block__title">
+          Recipes with carb estimates
+        </h2>
+        <EntryGrid>
+          {carbAwareRecipes.map((recipe) => (
+            <li>
+              <EntryCard {...toCardData(recipe, names)} />
+            </li>
+          ))}
+        </EntryGrid>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .notice {
+    max-width: var(--measure);
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--color-sea);
+    border-radius: var(--radius-soft);
+    background-color: var(--color-surface);
+  }
+
+  .section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .section-block + .section-block {
+    margin-top: 4rem;
+  }
+
+  .section-block__title {
+    font-size: var(--step-3);
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  .empty {
+    color: var(--color-ink-soft);
+  }
+
+  .animals {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+  }
+
+  @media (width < 40em) {
+    .animals {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2rem 1.25rem;
+    }
+  }
+
+  @media (40em <= width < 64em) {
+    .animals {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2.5rem 2rem;
+    }
+  }
+
+  @media (width >= 64em) {
+    .animals {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 2.5rem 2rem;
+    }
+  }
+</style>

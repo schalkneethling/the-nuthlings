@@ -1,0 +1,45 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <hr class="tideline" />
+  <div class="site-footer__band">
+    <div class="wrapper site-footer__inner">
+      <p class="site-footer__name">The Nuthlings</p>
+      <p>Grown, cooked, made, drawn, and played on a small holding by the sea.</p>
+      <p class="marker">© {year} The Nuthlings family</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 5rem;
+  }
+
+  .site-footer .tideline {
+    color: var(--color-sea-deep);
+  }
+
+  .site-footer__band {
+    background-color: var(--color-sea-deep);
+    color: var(--color-foam);
+  }
+
+  .site-footer__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-block: 2.5rem 3rem;
+  }
+
+  .site-footer__name {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+  }
+
+  .site-footer .marker {
+    color: var(--color-foam);
+  }
+</style>

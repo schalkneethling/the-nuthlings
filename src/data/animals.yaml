@@ -1,0 +1,27 @@
+# Add a photo by placing an image next to this file (for example
+# src/data/animals/first-dog.jpg) and adding `photo: ./animals/first-dog.jpg`
+# plus a `photoAlt` description.
+first-dog:
+  name: First dog
+  kind: dog
+  description: Replace this with a few lines about who this dog is and what they love.
+second-dog:
+  name: Second dog
+  kind: dog
+  description: Replace this with a few lines about who this dog is and what they love.
+third-dog:
+  name: Third dog
+  kind: dog
+  description: Replace this with a few lines about who this dog is and what they love.
+first-cat:
+  name: First cat
+  kind: cat
+  description: Replace this with a few lines about who this cat is and where they like to sleep.
+second-cat:
+  name: Second cat
+  kind: cat
+  description: Replace this with a few lines about who this cat is and where they like to sleep.
+third-cat:
+  name: Third cat
+  kind: cat
+  description: Replace this with a few lines about who this cat is and where they like to sleep.
