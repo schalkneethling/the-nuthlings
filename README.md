@@ -5,12 +5,12 @@ A website for our family: gardening, cooking, crafts, art, music, our animals, a
 ## Running it
 
 ```sh
-npm install
-npm run dev      # local development at http://localhost:4321
-npm run build    # static site in dist/
-npm test         # unit tests (Vitest)
-npm run test:e2e # end-to-end and accessibility tests (Playwright + axe)
-npm run check    # type checking
+pnpm install
+pnpm dev          # local development at http://localhost:4321
+pnpm build        # static site in dist/
+pnpm test         # unit tests (Vitest)
+pnpm test:e2e     # end-to-end and accessibility tests (Playwright + axe)
+pnpm check        # type checking
 ```
 
 ## Adding something to the site
@@ -49,6 +49,6 @@ The look comes from the holding itself: salt-mist ground, sand surfaces, granite
 
 The site is fully static and deploys as Cloudflare Workers static assets, configured in `wrangler.jsonc`. No Worker code runs; Cloudflare serves the files in `dist/` and uses `404.html` for missing pages. Cache and security headers live in `public/_headers`.
 
-To deploy from your machine, run `npm run deploy` (the first run asks you to log in to Cloudflare). To deploy on every push instead, connect the repository in the Cloudflare dashboard under Workers & Pages, with `npm run build` as the build command and `npx wrangler deploy` as the deploy command.
+To deploy from your machine, run `pnpm run deploy` (the first run asks you to log in to Cloudflare). To deploy on every push instead, connect the repository in the Cloudflare dashboard under Workers & Pages, with `pnpm build` as the build command and `pnpm exec wrangler deploy` as the deploy command.
 
 Once the custom domain is attached in the dashboard (Settings, then Domains & Routes), set `site` in `astro.config.mjs` to that domain.

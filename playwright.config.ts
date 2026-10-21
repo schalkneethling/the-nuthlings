@@ -13,7 +13,7 @@ export default defineConfig({
     { name: "phone", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: "npm run build && npx astro preview --port 4329 --ignore-lock",
+    command: "pnpm build && pnpm exec astro preview --port 4329 --ignore-lock",
     url: "http://localhost:4329",
     reuseExistingServer: !process.env.CI,
   },
